@@ -1,0 +1,56 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+}
+
+
+
+/*  STAFF ENUM */
+enum StaffStatus {
+  Active
+  Inactive
+  Pending
+  Suspended
+}
+model Staff {
+  id          String      @id @default(cuid())
+  name        String
+  email       String      @unique
+  jobTitle   String?    
+  nationality String
+  location    String
+  
+ 
+  status      StaffStatus @default(Active)
+
+  // bookings    Booking[]
+  createdAt   DateTime    @default(now())
+}
+
+
+// model Booking {
+//   id        String   @id @default(cuid())
+//   title     String
+//   date      Date
+//   startTime DateTime
+//   endTime   DateTime
+//   staffId   String
+//   staff     Staff    @relation(fields: [staffId], references: [id])
+//   createdAt DateTime @default(now())
+
+//   @@index([staffId])
+// }
