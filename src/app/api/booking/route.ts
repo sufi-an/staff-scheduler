@@ -43,6 +43,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { title, staffId, startTime, endTime } = body;
 
+    console.log(startTime, endTime);
+    
     // 1. Basic Validation
     if (!title || !staffId || !startTime || !endTime) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -77,6 +79,8 @@ export async function POST(request: Request) {
 
     // 4. Create Booking
     // We derive the 'date' field from startTime automatically
+    console.log(newStart, newEnd);
+    
     const booking = await prisma.booking.create({
       data: {
         title,

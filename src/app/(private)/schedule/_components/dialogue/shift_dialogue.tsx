@@ -1,102 +1,150 @@
-'use client'
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-import { format } from "date-fns"
-import { useForm } from "react-hook-form"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useEffect } from "react"
+interface AddShiftDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  defaultStaffId: string | null;
+  defaultDate: Date | null;
+  staffList: any[];
+  onSave: (data: any) => void;
+}
 
-export function AddShiftDialog({ 
-  open, 
-  onOpenChange, 
-  defaultStaffId, 
+export function AddShiftDialog({
+  open,
+  onOpenChange,
+  defaultStaffId,
   defaultDate,
   staffList,
-  onSave
-}: any) {
-  
-  const { register, handleSubmit, setValue, reset } = useForm()
+  onSave,
+}: AddShiftDialogProps) {
+  // --- STATE ---
+  const [title, setTitle] = useState("Shift");
+  const [staffId, setStaffId] = useState("");
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("17:00");
 
+  // --- RESET STATE WHEN DIALOG OPENS ---
   useEffect(() => {
-    if (open && defaultStaffId && defaultDate) {
-      setValue("staffId", defaultStaffId)
-      setValue("date", format(defaultDate, "yyyy-MM-dd"))
-      setValue("startTime", "09:00")
-      setValue("endTime", "17:00")
+    if (open) {
+      setStaffId(defaultStaffId || "");
+      // Default to 9-5, or whatever logic you prefer
+      setStartTime("09:00");
+      setEndTime("17:00");
+      setTitle("Regular Shift");
     }
-  }, [open, defaultStaffId, defaultDate, setValue])
+  }, [open, defaultStaffId, defaultDate]);
 
-  const onSubmit = (data: any) => {
-    // Construct ISO strings for the parent component
-    const startIso = new Date(`${data.date}T${data.startTime}`).toISOString()
-    const endIso = new Date(`${data.date}T${data.endTime}`).toISOString()
-    
+  // --- HANDLE SAVE ---
+  const handleSubmit = () => {
+    if (!staffId) {
+      alert("Please select a staff member");
+      return;
+    }
+
+    // Pass the CURRENT state to the parent
     onSave({
-      title: data.title || "New Shift",
-      staffId: data.staffId,
-      startTime: startIso,
-      endTime: endIso
-    })
-    reset()
-  }
+      title,
+      staffId,
+      startTime, // "HH:mm" string (e.g. "18:00")
+      endTime,   // "HH:mm" string
+      date: defaultDate, // The column date you clicked on
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add Shift</DialogTitle>
+          <DialogTitle>
+            Add Shift for {defaultDate ? format(defaultDate, "MMM dd, yyyy") : ""}
+          </DialogTitle>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
-          
+
+        <div className="grid gap-4 py-4">
+          {/* Title Input */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-right">Staff</Label>
-            <div className="col-span-3">
-              <Select 
-                disabled={!!defaultStaffId} 
-                defaultValue={defaultStaffId || ""}
-                onValueChange={(v) => setValue("staffId", v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Staff" />
-                </SelectTrigger>
-                <SelectContent>
-                  {staffList.map((s: any) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Label htmlFor="title" className="text-right">
+              Title
+            </Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+
+          {/* Staff Select */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="staff" className="text-right">
+              Staff
+            </Label>
+            <Select value={staffId} onValueChange={setStaffId}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select staff" />
+              </SelectTrigger>
+              <SelectContent>
+                {staffList.map((staff) => (
+                  <SelectItem key={staff.id} value={staff.id}>
+                    {staff.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Time Inputs */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="start" className="text-right">
+              Start
+            </Label>
+            <Input
+              id="start"
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="col-span-3"
+            />
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right">Shift Title</Label>
-            <Input id="title" placeholder="e.g. Morning Shift" className="col-span-3" {...register("title")} />
+            <Label htmlFor="end" className="text-right">
+              End
+            </Label>
+            <Input
+              id="end"
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className="col-span-3"
+            />
           </div>
+        </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-right">Date</Label>
-            <Input type="date" className="col-span-3" {...register("date")} />
-          </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-right">Time</Label>
-            <div className="col-span-3 flex gap-2">
-              <Input type="time" {...register("startTime")} />
-              <span className="self-center">-</span>
-              <Input type="time" {...register("endTime")} />
-            </div>
-          </div>
-
-          <DialogFooter>
-             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-             <Button type="submit">Save Shift</Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter>
+          <Button type="submit" onClick={handleSubmit} className="bg-purple-600 hover:bg-purple-700">
+            Save Shift
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

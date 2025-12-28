@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// TYPE DEFINITION: Params is now a Promise
+type Params = Promise<{ id: string }>;
+
 // GET Single Booking
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Params }) {
   try {
+    const { id } = await params; // <--- AWAIT HERE
+
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { staff: true }
     });
 
@@ -18,20 +23,19 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // UPDATE Booking
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Params }) {
   try {
+    const { id } = await params; // <--- AWAIT HERE
     const body = await request.json();
     const { title, staffId, startTime, endTime } = body;
 
     // Check if booking exists first
     const existingBooking = await prisma.booking.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingBooking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
 
-    // Prepare data for overlap check
-    // If new times are provided, use them; otherwise fall back to existing times
     const checkStart = startTime ? new Date(startTime) : existingBooking.startTime;
     const checkEnd = endTime ? new Date(endTime) : existingBooking.endTime;
     const checkStaffId = staffId || existingBooking.staffId;
@@ -44,7 +48,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const conflictingBooking = await prisma.booking.findFirst({
       where: {
         staffId: checkStaffId,
-        id: { not: params.id }, // IMPORTANT: Exclude the booking we are currently updating
+        id: { not: id }, 
         AND: [
           { startTime: { lt: checkEnd } },
           { endTime: { gt: checkStart } }
@@ -61,13 +65,12 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     // Update
     const updatedBooking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         staffId,
         startTime: startTime ? new Date(startTime) : undefined,
         endTime: endTime ? new Date(endTime) : undefined,
-        // Update 'date' only if startTime changed
         date: startTime ? new Date(new Date(startTime).setHours(0,0,0,0)) : undefined, 
       },
     });
@@ -81,10 +84,12 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 // DELETE Booking
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Params }) {
   try {
+    const { id } = await params; // <--- AWAIT HERE
+
     await prisma.booking.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ message: "Booking deleted successfully" });

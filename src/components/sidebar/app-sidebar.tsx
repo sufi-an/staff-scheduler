@@ -23,7 +23,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader, // Assuming you have this, otherwise use a div inside Sidebar
+  SidebarHeader, 
 } from "@/components/ui/sidebar"
 
 // Menu items matching the ShiftCare image
@@ -32,7 +32,7 @@ const items = [
     title: "Recent Releases",
     url: "/releases",
     icon: Star,
-    variant: "highlight", // Custom marker for styling
+    variant: "highlight", 
   },
   {
     title: "Dashboard",
@@ -43,66 +43,66 @@ const items = [
     title: "Scheduler",
     url: "/schedule",
     icon: Calendar,
-    isActive: true, // Simulating the active state shown in image
+    // isActive: true, 
   },
   {
     title: "Staff",
     url: "/staff",
     icon: User,
   },
-  {
-    title: "Clients",
-    url: "/clients",
-    icon: Users,
-  },
-  {
-    title: "Timesheet",
-    url: "/timesheet",
-    icon: FileSpreadsheet,
-  },
-  {
-    title: "Invoices",
-    url: "/invoices",
-    icon: Landmark,
-  },
-  {
-    title: "Forms",
-    url: "/forms",
-    icon: FileText,
-    badge: "Premium",
-  },
-  {
-    title: "Incidents",
-    url: "/incidents",
-    icon: Ticket,
-    badge: "Premium",
-  },
-  {
-    title: "Reports",
-    url: "/reports",
-    icon: PieChart,
-  },
-  {
-    title: "Certifications",
-    url: "/certifications",
-    icon: Award,
-    badge: "New",
-  },
-  {
-    title: "Account",
-    url: "/account",
-    icon: Settings,
-  },
-  {
-    title: "Integrations",
-    url: "/integrations",
-    icon: Link,
-  },
-  {
-    title: "Messages",
-    url: "/messages",
-    icon: MessageSquare,
-  },
+  // {
+  //   title: "Clients",
+  //   url: "/clients",
+  //   icon: Users,
+  // },
+  // {
+  //   title: "Timesheet",
+  //   url: "/timesheet",
+  //   icon: FileSpreadsheet,
+  // },
+  // {
+  //   title: "Invoices",
+  //   url: "/invoices",
+  //   icon: Landmark,
+  // },
+  // {
+  //   title: "Forms",
+  //   url: "/forms",
+  //   icon: FileText,
+  //   badge: "Premium",
+  // },
+  // {
+  //   title: "Incidents",
+  //   url: "/incidents",
+  //   icon: Ticket,
+  //   badge: "Premium",
+  // },
+  // {
+  //   title: "Reports",
+  //   url: "/reports",
+  //   icon: PieChart,
+  // },
+  // {
+  //   title: "Certifications",
+  //   url: "/certifications",
+  //   icon: Award,
+  //   badge: "New",
+  // },
+  // {
+  //   title: "Account",
+  //   url: "/account",
+  //   icon: Settings,
+  // },
+  // {
+  //   title: "Integrations",
+  //   url: "/integrations",
+  //   icon: Link,
+  // },
+  // {
+  //   title: "Messages",
+  //   url: "/messages",
+  //   icon: MessageSquare,
+  // },
 ]
 export function AppSidebar() {
   return (
@@ -116,14 +116,14 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             
-            {/* CHANGE 1: Add 'gap-2' here for space between items */}
+          
             <SidebarMenu className="gap-4"> 
               
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
-                    isActive={item.isActive}
+                    // isActive={item?.isActive ??}
                     // Keep your existing highlighting logic here
                     className={item.variant === "highlight" ? "bg-emerald-100/50 hover:bg-emerald-100 text-emerald-900 font-medium" : ""}
                   >
@@ -135,7 +135,7 @@ export function AppSidebar() {
                         <span>{item.title}</span>
                       </div>
                       
-                      {item.badge && (
+                      {/* {item.badge && (
                         <span className={`text-[10px] px-1.5 py-0.5 rounded border ${
                           item.badge === "New" 
                             ? "bg-blue-600 text-white border-blue-600 rounded-full font-bold" 
@@ -143,7 +143,7 @@ export function AppSidebar() {
                         }`}>
                           {item.badge}
                         </span>
-                      )}
+                      )} */}
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
