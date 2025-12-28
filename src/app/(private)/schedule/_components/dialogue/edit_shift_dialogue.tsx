@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 interface EditShiftDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  shift: any | null; // The shift object being edited
+  shift: any | null;
   staffList: any[];
   onUpdate: (id: string, data: any) => void;
   onDelete: (id: string) => void;
@@ -41,14 +41,12 @@ export function EditShiftDialog({
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
 
-  // Load shift data when the modal opens
   useEffect(() => {
     if (open && shift) {
       setTitle(shift.title);
       setStaffId(shift.staffId);
-      // Extract HH:mm from the ISO string directly
-      // Assumes shift.startTime is "2025-12-22T18:00:00.000Z"
-      setStartTime(shift.startTime.slice(11, 16));
+    
+      setStartTime(shift.startTime.slice(11, 16)); // 
       setEndTime(shift.endTime.slice(11, 16));
     }
   }, [open, shift]);

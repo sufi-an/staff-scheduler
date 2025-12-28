@@ -5,7 +5,6 @@ const prismaClientSingleton = () => {
   return new PrismaClient({
     adapter: new PrismaLibSql({
       url: process.env.DATABASE_URL!, // file:./dev.db
-      // authToken not needed for local sqlite
     }),
   })
 }

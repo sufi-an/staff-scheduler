@@ -28,7 +28,7 @@ import { EditShiftDialog } from "../dialogue/edit_shift_dialogue";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { StaffDetailsSheet } from "../dialogue/staff_detail_dialogue";
-// --- TYPES ---
+
 type ViewMode = "day" | "week" | "month";
 
 type Staff = {
@@ -41,8 +41,8 @@ type Shift = {
   id: string;
   staffId: string;
   title: string;
-  startTime: string; // ISO String from DB
-  endTime: string; // ISO String from DB
+  startTime: string;
+  endTime: string;
   color?: string;
 };
 
@@ -62,13 +62,12 @@ export function SchedulerView() {
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [currentShift, setCurrentShift] = useState<Shift | null>(null); // The shift being edited
-  // --- API FETCHING ---
+  const [currentShift, setCurrentShift] = useState<Shift | null>(null);
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Send the current date so backend knows which month to fetch
         const dateStr = format(currentDate, "yyyy-MM-dd");
         const res = await fetch(`/api/staff/booking?month=${dateStr}`);
 
@@ -76,14 +75,11 @@ export function SchedulerView() {
 
         const data = await res.json();
 
-        // The API returns { staff: [], shifts: [] }
         setStaffList(data.staff);
 
-        // Map DB data to Frontend Shift structure
-        // (Adding default colors since DB might not have them)
         const mappedShifts = data.shifts.map((s: any) => ({
           ...s,
-          color: "bg-blue-100 border-blue-200 text-blue-700", // Default style
+          color: "bg-blue-100 border-blue-200 text-blue-700",
         }));
 
         setShifts(mappedShifts);
@@ -95,7 +91,7 @@ export function SchedulerView() {
     };
 
     fetchData();
-  }, [currentDate]); // <--- Re-run when user changes date
+  }, [currentDate]);
 
   // --- DATE LOGIC ---
   const handlePrev = () => {
@@ -110,7 +106,7 @@ export function SchedulerView() {
     if (viewMode === "month") setCurrentDate(addMonths(currentDate, 1));
   };
 
-  // Generate Columns (The "Grid" X-Axis)
+  // Generate Columns (The "Grid" X-Axis) Day off now / design breaks
   const columns = useMemo(() => {
     switch (viewMode) {
       case "day":
@@ -145,7 +141,7 @@ export function SchedulerView() {
     });
   };
 
-  // --- SAVE HANDLER (From previous steps) ---
+  // --- SAVE HANDLER ---
   const handleSaveShift = async (formData: any) => {
     try {
       // 1. Create the Local Date (e.g., 09:00 Local)
@@ -165,14 +161,8 @@ export function SchedulerView() {
         endDate.setDate(endDate.getDate() + 1);
       }
 
-      // --- MAGICAL FIX HERE ---
-      // We add 6 hours (your timezone offset) to the time.
-      // So 09:00 becomes 15:00 internally.
-      // When .toISOString() subtracts 6 hours later, it lands back on 09:00.
-
       const toUtcDate = (date: Date) => {
-        // getTimezoneOffset() returns -360 for GMT+6.
-        // We subtract it to add the minutes back.
+        /* Bangla fix, to get utc time, IDK it wasnt working  */
         return new Date(date.getTime() - date.getTimezoneOffset() * 60000);
       };
       console.log(formData);
@@ -180,15 +170,12 @@ export function SchedulerView() {
       const payload = {
         title: formData.title,
         staffId: formData.staffId,
-        // Now using the helper to preserve local numbers
         startTime: toUtcDate(startDate).toISOString(),
         endTime: toUtcDate(endDate).toISOString(),
       };
 
       console.log("Sending to DB:", payload);
-      // Now it should show: "2025-12-24T09:00:00.000Z"
-
-      // ... rest of your fetch logic
+      /* API CALL -> could use mutation  */
       const response = await fetch("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -210,7 +197,7 @@ export function SchedulerView() {
         throw new Error(savedBooking.error || "Failed to create booking");
       }
 
-      // Success Logic...
+      // on success
       setShifts((prev) => [
         ...prev,
         {
@@ -226,30 +213,25 @@ export function SchedulerView() {
   };
   // --- DELETE HANDLER ---
   const handleDeleteShift = async (id: string) => {
-    // 1. Show Confirmation Modal
-    console.log("fdoes come here");
     setIsEditModalOpen(false);
     const result = await MySwal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33", // Red for delete
-      cancelButtonColor: "#3085d6", // Blue for keep
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
     });
     console.log(result);
 
-    // 2. If user clicked "Cancel", stop here
     if (!result.isConfirmed) return;
 
-    // 3. Proceed with API Call
     try {
       const res = await fetch(`/api/booking/${id}`, { method: "DELETE" });
 
       if (!res.ok) throw new Error("Delete failed");
 
-      // 4. Success Feedback
       await MySwal.fire({
         title: "Deleted!",
         text: "The shift has been removed.",
@@ -258,7 +240,6 @@ export function SchedulerView() {
         showConfirmButton: false,
       });
 
-      // Remove from UI
       setShifts((prev) => prev.filter((s) => s.id !== id));
     } catch (error) {
       console.error(error);
@@ -273,7 +254,6 @@ export function SchedulerView() {
   // --- UPDATE HANDLER ---
   const handleUpdateShift = async (id: string, formData: any) => {
     try {
-      // 1. RE-CALCULATE TIME (Same logic as Create)
       const localDate = new Date(formData.date);
       const [startHour, startMinute] = formData.startTime
         .split(":")
@@ -299,7 +279,6 @@ export function SchedulerView() {
         endTime: toUtcDate(endDate).toISOString(),
       };
 
-      // 2. SEND PATCH REQUEST
       const response = await fetch(`/api/booking/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -310,13 +289,12 @@ export function SchedulerView() {
 
       if (!response.ok) {
         if (response.status === 409) {
-          alert(`❌ Conflict: ${updatedData.error}`);
+          alert(` Conflict: ${updatedData.error}`);
           return;
         }
         throw new Error(updatedData.error);
       }
 
-      // 3. UPDATE LOCAL STATE
       setShifts((prev) =>
         prev.map((s) => (s.id === id ? { ...updatedData, color: s.color } : s))
       );
@@ -327,7 +305,7 @@ export function SchedulerView() {
       alert("Update failed");
     }
   };
-  // custom formatters
+  // ----- custom formatters ------
   const formatHeader = (date: Date) => {
     if (viewMode === "day") return format(date, "HH:mm");
     if (viewMode === "month") return format(date, "d");
@@ -445,8 +423,8 @@ export function SchedulerView() {
                     <div
                       className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" // Add cursor pointer
                       onClick={() => {
-                        setViewedStaff(staff); // 1. Set the staff
-                        setIsStaffSheetOpen(true); // 2. Open the sidebar
+                        setViewedStaff(staff);
+                        setIsStaffSheetOpen(true);
                       }}
                     >
                       <Avatar className="h-8 w-8 border border-slate-200">
@@ -533,7 +511,7 @@ export function SchedulerView() {
         onUpdate={handleUpdateShift}
         onDelete={handleDeleteShift}
       />
-      {/* Staff detail */}
+      {/* STAFF DETAIL DIALOGUE */}
       <StaffDetailsSheet
         open={isStaffSheetOpen}
         onOpenChange={setIsStaffSheetOpen}

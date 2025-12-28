@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 
-// Define a type for safety (optional but good practice)
 type User = {
   id: string
   name: string | null
@@ -28,9 +27,7 @@ export function DashboardView() {
   }, [])
 
   const handleLogout = () => {
-    // Clear the auth cookie
     document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
-    // Redirect to sign-in
     window.location.href = "/sign-in"
   }
 
@@ -52,7 +49,6 @@ export function DashboardView() {
           <p className="text-sm text-muted-foreground">Loading users...</p>
         ) : (
           <div className="bg-white p-4 rounded border text-xs font-mono overflow-auto max-h-[400px]">
-             {/* Using JSON.stringify for raw display as requested */}
             <pre>{JSON.stringify(users, null, 2)}</pre>
           </div>
         )}

@@ -41,11 +41,9 @@ export function AddShiftDialog({
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
 
-  // --- RESET STATE WHEN DIALOG OPENS ---
   useEffect(() => {
     if (open) {
       setStaffId(defaultStaffId || "");
-      // Default to 9-5, or whatever logic you prefer
       setStartTime("09:00");
       setEndTime("17:00");
       setTitle("Regular Shift");
@@ -59,13 +57,13 @@ export function AddShiftDialog({
       return;
     }
 
-    // Pass the CURRENT state to the parent
+  
     onSave({
       title,
       staffId,
-      startTime, // "HH:mm" string (e.g. "18:00")
-      endTime,   // "HH:mm" string
-      date: defaultDate, // The column date you clicked on
+      startTime,
+      endTime,   
+      date: defaultDate, //selected col
     });
   };
 

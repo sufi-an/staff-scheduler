@@ -20,23 +20,20 @@ export default function StaffGrid() {
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch staff data
   useEffect(() => {
     fetch("/api/staff")
       .then(async (res) => {
-        // 1. Check for server errors (404, 500)
         if (!res.ok) {
           throw new Error(`Server error: ${res.status}`);
         }
         return res.json();
       })
       .then((data) => {
-        // 2. Validate that 'data' is actually an Array before setting state
         if (Array.isArray(data)) {
           setStaffList(data);
         } else {
           console.error("API returned invalid format:", data);
-          setStaffList([]); // Fallback to empty list so app doesn't crash
+          setStaffList([]);
         }
       })
       .catch((err) => {
@@ -48,9 +45,7 @@ export default function StaffGrid() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 space-y-6">
-      {/* 2. Toolbar: Search, View Toggle, Tabs, Actions */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
-        {/* Left: Search & View Toggle */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -77,7 +72,6 @@ export default function StaffGrid() {
           </div>
         </div>
 
-        {/* Center: Tabs */}
         <Tabs defaultValue="current" className="hidden lg:block">
           <TabsList className="bg-transparent h-9 gap-2">
             <TabsTrigger
@@ -107,7 +101,6 @@ export default function StaffGrid() {
           </TabsList>
         </Tabs>
 
-        {/* Right: Filter & Add */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Button
             variant="outline"
@@ -123,7 +116,6 @@ export default function StaffGrid() {
         </div>
       </div>
 
-      {/* 3. The Grid Content */}
       {loading ? (
         <div className="flex justify-center py-20 text-slate-400">
           Loading staff...
@@ -133,7 +125,6 @@ export default function StaffGrid() {
           {staffList.map((staff) => (
             <StaffCard key={staff.id} staff={staff} />
           ))}
-          {/* Add empty state if needed */}
           {staffList.length === 0 && (
             <div className="col-span-full text-center py-20 bg-white rounded-xl border border-dashed text-slate-400">
               No staff members found. Click "Add Staff" to create one.

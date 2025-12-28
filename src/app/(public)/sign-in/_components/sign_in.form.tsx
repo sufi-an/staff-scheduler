@@ -10,7 +10,6 @@ export function SignInForm() {
     // Simulating a login by setting a cookie
     document.cookie = "auth-token=xyz-secret-token; path=/"
     
-    // Use Next.js router for client-side navigation instead of window.location
     router.push("/dashboard")
   }
 
@@ -22,7 +21,7 @@ export function SignInForm() {
       </div>
       
       <div className="space-y-4">
-        {/* You can add Input fields here later */}
+        {/*  add Input fields here  */}
         <Button onClick={handleLogin} className="w-full">
           Sign In (Simulated)
         </Button>

@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// TYPE DEFINITION: Params is now a Promise
 type Params = Promise<{ id: string }>;
 
-// GET Single Booking
 export async function GET(request: Request, { params }: { params: Params }) {
   try {
-    const { id } = await params; // <--- AWAIT HERE
+    const { id } = await params; 
 
     const booking = await prisma.booking.findUnique({
       where: { id },
@@ -22,10 +20,9 @@ export async function GET(request: Request, { params }: { params: Params }) {
   }
 }
 
-// UPDATE Booking
 export async function PATCH(request: Request, { params }: { params: Params }) {
   try {
-    const { id } = await params; // <--- AWAIT HERE
+    const { id } = await params; 
     const body = await request.json();
     const { title, staffId, startTime, endTime } = body;
 
@@ -44,7 +41,6 @@ export async function PATCH(request: Request, { params }: { params: Params }) {
       return NextResponse.json({ error: "End time must be after start time" }, { status: 400 });
     }
 
-    // OVERLAP CHECK (Exclude current booking ID)
     const conflictingBooking = await prisma.booking.findFirst({
       where: {
         staffId: checkStaffId,
@@ -63,7 +59,6 @@ export async function PATCH(request: Request, { params }: { params: Params }) {
       }, { status: 409 });
     }
 
-    // Update
     const updatedBooking = await prisma.booking.update({
       where: { id },
       data: {
@@ -83,10 +78,9 @@ export async function PATCH(request: Request, { params }: { params: Params }) {
   }
 }
 
-// DELETE Booking
 export async function DELETE(request: Request, { params }: { params: Params }) {
   try {
-    const { id } = await params; // <--- AWAIT HERE
+    const { id } = await params; 
 
     await prisma.booking.delete({
       where: { id }
