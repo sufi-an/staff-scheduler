@@ -37,20 +37,25 @@ model Staff {
  
   status      StaffStatus @default(Active)
 
-  // bookings    Booking[]
+  bookings    Booking[]
   createdAt   DateTime    @default(now())
 }
 
 
-// model Booking {
-//   id        String   @id @default(cuid())
-//   title     String
-//   date      Date
-//   startTime DateTime
-//   endTime   DateTime
-//   staffId   String
-//   staff     Staff    @relation(fields: [staffId], references: [id])
-//   createdAt DateTime @default(now())
+model Booking {
+  id        String   @id @default(cuid())
+  title     String
+  
+  date      DateTime 
+  
+  startTime DateTime
+  endTime   DateTime
+  
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
 
-//   @@index([staffId])
-// }
+  @@index([staffId])
+}

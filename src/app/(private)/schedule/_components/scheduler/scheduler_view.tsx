@@ -145,6 +145,58 @@ export function SchedulerView() {
     });
   };
 
+  /* submit */
+  // 1. Define this handler function inside your component
+  const handleSaveShift = async (formData: any) => {
+    try {
+      // PREPARE DATA:
+      // Ensure startTime and endTime are full ISO strings.
+      // If your Dialog gives you separate date + time strings, combine them here.
+      // Example: const startISO = new Date(`${formData.date}T${formData.startTime}`).toISOString();
+
+      const payload = {
+        title: formData.title,
+        staffId: formData.staffId,
+        startTime: formData.startTime, // Must be ISO String
+        endTime: formData.endTime, // Must be ISO String
+      };
+
+      // SEND TO API
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const savedBooking = await response.json();
+
+      // HANDLE ERRORS (Specifically Overlaps)
+      if (!response.ok) {
+        if (response.status === 409) {
+          alert(` Schedule Conflict!\n\n${savedBooking.error}`);
+          return; // Stop here, don't close modal
+        }
+        throw new Error(savedBooking.error || "Failed to create booking");
+      }
+
+      // SUCCESS: Update local state with the REAL data from DB
+      setShifts((prev) => [
+        ...prev,
+        {
+          ...savedBooking, // Contains the real DB ID and createdAt
+          // Keep your frontend-only styling props if they aren't in DB
+          color: "bg-purple-100 border-purple-300 text-purple-700",
+        },
+      ]);
+
+      // Close the modal only on success
+      setIsAddModalOpen(false);
+    } catch (error) {
+      console.error("Save failed:", error);
+      alert("Something went wrong saving the shift.");
+    }
+  };
+
   // Helper for formatting header dates
   const formatHeader = (date: Date) => {
     if (viewMode === "day") return format(date, "HH:mm");
@@ -358,17 +410,7 @@ export function SchedulerView() {
         defaultStaffId={selectedStaffId}
         defaultDate={selectedDate}
         staffList={staffList}
-        onSave={(newShift: any) => {
-          setShifts([
-            ...shifts,
-            {
-              ...newShift,
-              id: Math.random().toString(),
-              color: "bg-purple-100 border-purple-300 text-purple-700",
-            },
-          ]);
-          setIsAddModalOpen(false);
-        }}
+        onSave={handleSaveShift}
       />
     </div>
   );
